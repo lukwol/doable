@@ -1,0 +1,24 @@
+name: doable-dev
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    shm_size: 128mb
+    environment:
+      POSTGRES_PORT: ${PGPORT}
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: ${PGDATABASE}
+    ports:
+      - ${PGPORT}:${PGPORT}
+    volumes:
+      - data:/var/lib/postgresql
+
+volumes:
+  data:
+    name: doable-dev-data
+
+networks:
+  default:
+    name: doable-dev-network
