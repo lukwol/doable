@@ -19,6 +19,9 @@ gleam_http = ">= 4.3.0 and < 5.0.0"
 gleam_erlang = ">= 1.3.0 and < 2.0.0"
 wisp = ">= 2.2.1 and < 3.0.0"
 mist = ">= 5.0.4 and < 6.0.0"
+pog = ">= 4.1.0 and < 5.0.0"
+gleam_time = ">= 1.8.0 and < 2.0.0"
 
 [dev_dependencies]
 gleeunit = ">= 1.0.0 and < 2.0.0"
+squirrel = ">= 4.6.0 and < 5.0.0"
