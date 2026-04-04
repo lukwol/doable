@@ -46,6 +46,27 @@ services:
       db:
         condition: service_healthy
 
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+    restart: unless-stopped
+    environment:
+      - ENV
+      - SECRET_KEY_BASE
+      - SERVER_HOST
+      - SERVER_PORT
+      - PGHOST
+      - PGPORT
+      - PGDATABASE
+      - PGUSER
+      - PGPASSWORD
+    ports:
+      - ${SERVER_PORT}:${SERVER_PORT}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
 volumes:
   data:
     name: doable-dev-data
