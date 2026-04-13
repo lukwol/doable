@@ -1,4 +1,7 @@
 import browser
+import component/task_form.{
+  UserUpdatedCompleted, UserUpdatedDescription, UserUpdatedName,
+}
 import error.{type ApiError}
 import gleam/javascript/promise
 import gleam/option.{type Option, None, Some}
@@ -22,10 +25,9 @@ pub type Model {
 }
 
 pub type Msg {
-  UserUpdatedName(String)
-  UserUpdatedDescription(String)
-  UserClickedBack
+  FormMsg(task_form.Msg)
   UserSubmittedForm
+  UserClickedBack
   ApiCreatedTask(Result(Task, ApiError))
 }
 
@@ -38,12 +40,12 @@ pub fn init() -> #(Model, Effect(Msg)) {
 
 pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    UserUpdatedName(name) -> #(Model(..model, name:), effect.none())
-    UserUpdatedDescription(description) -> #(
+    FormMsg(UserUpdatedName(name)) -> #(Model(..model, name:), effect.none())
+    FormMsg(UserUpdatedDescription(description)) -> #(
       Model(..model, description:),
       effect.none(),
     )
-    UserClickedBack -> #(model, effect.from(fn(_) { browser.history_back() }))
+    FormMsg(UserUpdatedCompleted(_)) -> #(model, effect.none())
     UserSubmittedForm ->
       case model.name {
         "" -> #(Model(..model, error: Some("Name is required")), effect.none())
@@ -52,6 +54,7 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
           post_task(model.name, model.description),
         )
       }
+    UserClickedBack -> #(model, effect.from(fn(_) { browser.history_back() }))
     ApiCreatedTask(Ok(_)) -> #(
       model,
       modem.push(route.to_path(route.Tasks), None, None),
@@ -70,25 +73,8 @@ pub fn view(model: Model) -> Element(Msg) {
       None -> element.none()
       Some(err) -> html.p([], [element.text(err)])
     },
-    html.div([], [
-      html.label([], [element.text("Name")]),
-      html.input([
-        attribute.type_("text"),
-        attribute.placeholder("Task name"),
-        attribute.value(model.name),
-        event.on_input(UserUpdatedName),
-      ]),
-    ]),
-    html.div([], [
-      html.label([], [element.text("Description")]),
-      html.textarea(
-        [
-          attribute.placeholder("Optional description"),
-          event.on_input(UserUpdatedDescription),
-        ],
-        model.description,
-      ),
-    ]),
+    task_form.view(model.name, model.description, None)
+      |> element.map(FormMsg),
     html.div([], [
       html.button(
         [
