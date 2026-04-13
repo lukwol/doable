@@ -5,7 +5,7 @@ import error.{
 import gleam/bool
 import gleam/dynamic/decode.{type Decoder}
 import gleam/fetch
-import gleam/http.{Get}
+import gleam/http.{Get, Post}
 import gleam/http/request.{type Request}
 import gleam/javascript/promise.{type Promise}
 import gleam/result
@@ -15,6 +15,19 @@ pub fn get(path: String, decoder: Decoder(a)) -> Promise(Result(a, ApiError)) {
   req
   |> request.set_method(Get)
   |> execute(expect: 200, decoder:)
+}
+
+pub fn post(
+  path: String,
+  decoder: Decoder(a),
+  json body: String,
+) -> Promise(Result(a, ApiError)) {
+  use req <- with_json_request(path)
+  req
+  |> request.set_method(Post)
+  |> request.set_header("content-type", "application/json")
+  |> request.set_body(body)
+  |> execute(expect: 201, decoder:)
 }
 
 fn api_base_url() -> String {

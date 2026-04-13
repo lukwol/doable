@@ -4,16 +4,19 @@ import gleam/uri.{type Uri}
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import modem
+import page/new_task
 import page/tasks
 import route
 
 pub type Page {
   TasksPage(tasks.Model)
+  NewTaskPage(new_task.Model)
 }
 
 pub type Msg {
   OnRouteChanged(route.Route)
   TasksPageSentMsg(tasks.Msg)
+  NewTaskPageSentMsg(new_task.Msg)
 }
 
 pub fn init(initial_uri: Result(Uri, Nil)) -> #(Page, Effect(Msg)) {
@@ -33,6 +36,11 @@ pub fn update(page: Page, msg: Msg) -> #(Page, Effect(Msg)) {
       let #(new_page_model, effect) = tasks.update(page_model, page_msg)
       #(TasksPage(new_page_model), effect.map(effect, TasksPageSentMsg))
     }
+    NewTaskPageSentMsg(page_msg), NewTaskPage(page_model) -> {
+      let #(new_page_model, effect) = new_task.update(page_model, page_msg)
+      #(NewTaskPage(new_page_model), effect.map(effect, NewTaskPageSentMsg))
+    }
+    _, _ -> panic as "mismatched msg and page"
   }
 }
 
@@ -40,6 +48,8 @@ pub fn view(page: Page) -> Element(Msg) {
   case page {
     TasksPage(page_model) ->
       tasks.view(page_model) |> element.map(TasksPageSentMsg)
+    NewTaskPage(page_model) ->
+      new_task.view(page_model) |> element.map(NewTaskPageSentMsg)
   }
 }
 
@@ -58,6 +68,10 @@ fn page_from_route(route: route.Route) -> #(Page, Effect(Msg)) {
     route.Tasks -> {
       let #(page_model, effect) = tasks.init()
       #(TasksPage(page_model), effect.map(effect, TasksPageSentMsg))
+    }
+    route.NewTask -> {
+      let #(page_model, effect) = new_task.init()
+      #(NewTaskPage(page_model), effect.map(effect, NewTaskPageSentMsg))
     }
   }
 }

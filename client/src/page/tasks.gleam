@@ -5,6 +5,7 @@ import lustre/attribute
 import lustre/effect.{type Effect}
 import lustre/element.{type Element}
 import lustre/element/html
+import route
 import service/task_service
 import task.{type Task}
 
@@ -36,6 +37,9 @@ pub fn update(_model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 pub fn view(model: Model) -> Element(Msg) {
   html.div([], [
     html.h1([], [element.text("Tasks")]),
+    html.a([attribute.href(route.to_path(route.NewTask))], [
+      element.text("New Task"),
+    ]),
     case model.tasks {
       Error(err) -> html.p([], [element.text(error.message(err))])
       Ok([]) if model.loading -> html.p([], [element.text("Loading...")])
