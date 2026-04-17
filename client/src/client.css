@@ -1,3 +1,8 @@
 @import "tailwindcss";
 @plugin "daisyui";
 @plugin "@iconify/tailwind4";
+
+body.desktop * {
+  -webkit-user-select: none;
+  user-select: none;
+}
