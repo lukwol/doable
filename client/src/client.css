@@ -2,7 +2,12 @@
 @plugin "daisyui";
 @plugin "@iconify/tailwind4";
 
+body.mobile *,
 body.desktop * {
   -webkit-user-select: none;
   user-select: none;
+}
+
+body.mobile > #app > * {
+  padding-top: env(safe-area-inset-top);
 }

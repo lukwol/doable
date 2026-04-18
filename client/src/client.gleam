@@ -1,4 +1,4 @@
-import app/platform.{Browser, Linux, MacOS, Windows}
+import app/platform.{Android, Browser, IOS, Linux, MacOS, Windows}
 import browser
 import lustre
 import lustre/effect.{type Effect}
@@ -10,6 +10,7 @@ import tauri/menu
 pub fn main() {
   case platform.platform() {
     MacOS | Windows | Linux -> browser.add_body_class("desktop")
+    IOS | Android -> browser.add_body_class("mobile")
     Browser -> browser.add_body_class("browser")
   }
   let app = lustre.application(init, update, view)

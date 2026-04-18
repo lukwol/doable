@@ -29,6 +29,9 @@ lustre_dev_tools = ">= 2.3.6 and < 3.0.0"
 
 [tools.lustre.html]
 title = "Doable"
+meta = [
+  { name = "viewport", content = "width=device-width, initial-scale=1, user-scalable=no, viewport-fit=cover" },
+]
 
 [tools.lustre.bin]
 bun = "system"
