@@ -25,6 +25,7 @@
 		007E478DB8BC37A788C4730F /* app_iOS.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = app_iOS.entitlements; sourceTree = "<group>"; };
 		02B7F8347F94B067E6B27396 /* LaunchScreen.storyboard */ = {isa = PBXFileReference; lastKnownFileType = file.storyboard; path = LaunchScreen.storyboard; sourceTree = "<group>"; };
 		04B56F58E2E44DDE1D67E7B7 /* MetalKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = MetalKit.framework; path = System/Library/Frameworks/MetalKit.framework; sourceTree = SDKROOT; };
+		09EA68E21FDCEDB93DEE503F /* commands.rs */ = {isa = PBXFileReference; path = commands.rs; sourceTree = "<group>"; };
 		0E2B15F176E4B041AE33EEEA /* UIKit.framework */ = {isa = PBXFileReference; lastKnownFileType = wrapper.framework; name = UIKit.framework; path = System/Library/Frameworks/UIKit.framework; sourceTree = SDKROOT; };
 		1631E4CFBB715FFDBF919C8C /* main.rs */ = {isa = PBXFileReference; path = main.rs; sourceTree = "<group>"; };
 		17B52554D60D361AFE791C3E /* lib.rs */ = {isa = PBXFileReference; path = lib.rs; sourceTree = "<group>"; };
@@ -104,6 +105,7 @@
 		855775165ACE55D883F89EB3 /* src */ = {
 			isa = PBXGroup;
 			children = (
+				09EA68E21FDCEDB93DEE503F /* commands.rs */,
 				17B52554D60D361AFE791C3E /* lib.rs */,
 				1631E4CFBB715FFDBF919C8C /* main.rs */,
 			);

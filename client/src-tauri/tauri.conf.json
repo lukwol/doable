@@ -6,7 +6,7 @@
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:1234",
-    "beforeDevCommand": "gleam run -m lustre/dev start",
+    "beforeDevCommand": "gleam run -m lustre/dev start ${TAURI_DEV_HOST:+--host=0.0.0.0}",
     "beforeBuildCommand": "gleam run -m lustre/dev build"
   },
   "app": {
@@ -26,6 +26,9 @@
   "bundle": {
     "active": true,
     "targets": "all",
+    "iOS": {
+      "developmentTeam": "YOUR_APPLE_TEAM_ID"
+    },
     "icon": [
       "icons/32x32.png",
       "icons/128x128.png",

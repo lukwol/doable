@@ -2,5 +2,15 @@
   "identifier": "mobile-capability",
   "platforms": ["android", "iOS"],
   "windows": ["main"],
-  "permissions": ["haptics:allow-impact-feedback"]
+  "permissions": [
+    "haptics:allow-impact-feedback",
+    {
+      "identifier": "http:default",
+      "allow": [
+        {
+          "url": "http://*:8000/**"
+        }
+      ]
+    }
+  ]
 }

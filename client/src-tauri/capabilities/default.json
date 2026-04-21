@@ -11,6 +11,9 @@
       "allow": [
         {
           "url": "http://localhost:8000/**"
+        },
+        {
+          "url": "https://your-domain.com/**"
         }
       ]
     }

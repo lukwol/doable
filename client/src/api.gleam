@@ -10,7 +10,9 @@ import gleam/http.{Delete, Get, Patch, Post}
 import gleam/http/request.{type Request}
 import gleam/http/response.{type Response}
 import gleam/javascript/promise.{type Promise}
+import gleam/option.{None, Some}
 import gleam/result
+import tauri/commands
 import tauri/http as tauri_http
 
 pub fn get(path: String, decoder: Decoder(a)) -> Promise(Result(a, ApiError)) {
@@ -61,10 +63,14 @@ pub fn delete(path: String) -> Promise(Result(Nil, ApiError)) {
   })
 }
 
-fn api_base_url() -> String {
-  case platform.platform() {
-    Browser -> browser.window_location_origin()
-    _ -> "http://localhost:8000"
+fn api_base_url() -> Promise(String) {
+  use tauri_is_dev <- promise.await(commands.tauri_is_dev())
+  use tauri_dev_host <- promise.map(commands.tauri_dev_host())
+  case platform.platform(), tauri_is_dev, tauri_dev_host {
+    Browser, _, _ -> browser.window_location_origin()
+    _, True, Some(host) -> "http://" <> host <> ":8000"
+    _, True, None -> "http://localhost:8000"
+    _, False, _ -> "https://your-domain.com"
   }
 }
 
@@ -83,7 +89,8 @@ fn with_json_request(
   path: String,
   callback: fn(Request(String)) -> Promise(Result(b, ApiError)),
 ) -> Promise(Result(b, ApiError)) {
-  let url = api_base_url() <> path
+  use base_url <- promise.await(api_base_url())
+  let url = base_url <> path
   request.to(url)
   |> result.replace_error(InvalidUrl(url))
   |> result.map(request.set_header(_, "accept", "application/json"))
