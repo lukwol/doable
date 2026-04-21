@@ -30,7 +30,10 @@ impl<R: Runtime> BuilderExt<R> for Builder<R> {
 #[cfg(mobile)]
 impl<R: Runtime> BuilderExt<R> for Builder<R> {
     fn setup_platform(self) -> Self {
-        self
+        self.setup(|app| {
+            app.handle().plugin(tauri_plugin_haptics::init())?;
+            Ok(())
+        })
     }
 }
 
