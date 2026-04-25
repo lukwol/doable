@@ -1,39 +1,72 @@
+import api
+import error.{type ApiError}
+import gleam/dynamic/decode
+import gleam/javascript/promise
+import gleam/list
 import lustre
-import lustre/element.{text}
-import lustre/element/html.{button, div, input, p}
-import lustre/event.{on_click, on_input}
+import lustre/attribute
+import lustre/effect.{type Effect}
+import lustre/element.{type Element}
+import lustre/element/html
+import task.{type Task}
 
 pub fn main() {
-  let app = lustre.simple(init, update, view)
+  let app = lustre.application(init, update, view)
   let assert Ok(_) = lustre.start(app, "#app", Nil)
-
-  Nil
 }
 
-type Model {
-  Model(name: String, greeting: String)
+pub type Model {
+  Model(tasks: Result(List(Task), ApiError), loading: Bool)
 }
 
-fn init(_flags) {
-  Model(name: "", greeting: "")
+pub type Msg {
+  ApiReturnedTasks(Result(List(Task), ApiError))
 }
 
-type Msg {
-  UserUpdatedName(String)
-  UserClickedGreet
+pub fn init(_) -> #(Model, Effect(Msg)) {
+  #(Model(tasks: Ok([]), loading: True), fetch_tasks())
 }
 
-fn update(model: Model, msg: Msg) {
+pub fn update(_model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
   case msg {
-    UserUpdatedName(name) -> Model(..model, name: name)
-    UserClickedGreet -> Model(..model, greeting: "Hello " <> model.name <> "!")
+    ApiReturnedTasks(Ok(tasks)) -> #(
+      Model(tasks: Ok(tasks), loading: False),
+      effect.none(),
+    )
+    ApiReturnedTasks(Error(err)) -> #(
+      Model(tasks: Error(err), loading: False),
+      effect.none(),
+    )
   }
 }
 
-fn view(model: Model) {
-  div([], [
-    input([on_input(UserUpdatedName)]),
-    button([on_click(UserClickedGreet)], [text("Greet")]),
-    p([], [text(model.greeting)]),
+fn fetch_tasks() -> Effect(Msg) {
+  use dispatch <- effect.from
+  api.get("/api/tasks", decode.list(task.task_decoder()))
+  |> promise.map(ApiReturnedTasks)
+  |> promise.tap(dispatch)
+  Nil
+}
+
+pub fn view(model: Model) -> Element(Msg) {
+  html.div([], [
+    html.h1([], [element.text("Tasks")]),
+    case model.tasks {
+      Error(err) -> html.p([], [element.text(error.message(err))])
+      Ok([]) if model.loading -> html.p([], [element.text("Loading...")])
+      Ok([]) -> html.p([], [element.text("No tasks yet")])
+      Ok(tasks) -> html.ul([], list.map(tasks, view_task))
+    },
+  ])
+}
+
+fn view_task(task: Task) -> Element(Msg) {
+  html.li([], [
+    html.input([
+      attribute.type_("checkbox"),
+      attribute.checked(task.completed),
+      attribute.disabled(True),
+    ]),
+    element.text(task.name <> " — " <> task.description),
   ])
 }
