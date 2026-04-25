@@ -1,14 +1,17 @@
+import app/platform.{Browser}
 import browser
 import error.{
   type ApiError, DecodeError, FetchError, InvalidUrl, UnexpectedStatus,
 }
 import gleam/bool
 import gleam/dynamic/decode.{type Decoder}
-import gleam/fetch
+import gleam/fetch.{type FetchBody, type FetchError}
 import gleam/http.{Delete, Get, Patch, Post}
 import gleam/http/request.{type Request}
+import gleam/http/response.{type Response}
 import gleam/javascript/promise.{type Promise}
 import gleam/result
+import tauri/http as tauri_http
 
 pub fn get(path: String, decoder: Decoder(a)) -> Promise(Result(a, ApiError)) {
   use req <- with_json_request(path)
@@ -47,7 +50,7 @@ pub fn delete(path: String) -> Promise(Result(Nil, ApiError)) {
   use request <- with_json_request(path)
   request
   |> request.set_method(Delete)
-  |> fetch.send
+  |> send
   |> promise.map(result.map_error(_, FetchError))
   |> promise.map_try(fn(response) {
     use <- bool.guard(
@@ -59,7 +62,21 @@ pub fn delete(path: String) -> Promise(Result(Nil, ApiError)) {
 }
 
 fn api_base_url() -> String {
-  browser.window_location_origin()
+  case platform.platform() {
+    Browser -> browser.window_location_origin()
+    _ -> "http://localhost:8000"
+  }
+}
+
+fn send(
+  request: request.Request(String),
+) -> Promise(Result(Response(FetchBody), FetchError)) {
+  request
+  |> fetch.to_fetch_request
+  |> tauri_http.raw_send
+  |> promise.try_await(fn(resp) {
+    promise.resolve(Ok(fetch.from_fetch_response(resp)))
+  })
 }
 
 fn with_json_request(
@@ -80,7 +97,7 @@ fn execute(
   decoder decoder: Decoder(a),
 ) -> Promise(Result(a, ApiError)) {
   req
-  |> fetch.send
+  |> send
   |> promise.try_await(fetch.read_json_body)
   |> promise.map(result.map_error(_, FetchError))
   |> promise.map_try(fn(response) {
