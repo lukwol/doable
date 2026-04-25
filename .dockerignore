@@ -4,3 +4,10 @@
 # Gleam
 **/build
 erl_crash.dump
+
+# Lustre Dev Tools
+client/.lustre
+client/dist
+
+# Bun
+client/node_modules

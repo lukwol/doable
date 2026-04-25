@@ -36,3 +36,6 @@ tailwindcss = "./node_modules/.bin/tailwindcss"
 
 [tools.lustre.dev]
 proxy = { from = "/api", to = "http://localhost:8000/api" }
+
+[tools.lustre.build]
+minify = true

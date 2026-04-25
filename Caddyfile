@@ -1,0 +1,11 @@
+:80 {
+	handle /api/* {
+		reverse_proxy server:{$SERVER_PORT}
+	}
+
+	handle {
+		root * /srv
+		file_server
+		try_files {path} /index.html
+	}
+}

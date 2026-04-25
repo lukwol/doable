@@ -1,0 +1,80 @@
+name: doable-prod
+
+services:
+  db:
+    image: postgres:18-alpine
+    restart: unless-stopped
+    shm_size: 128mb
+    environment:
+      POSTGRES_PORT: ${PGPORT}
+      POSTGRES_USER: ${PGUSER}
+      POSTGRES_PASSWORD: ${PGPASSWORD}
+      POSTGRES_DB: ${PGDATABASE}
+    ports:
+      - ${PGPORT}:${PGPORT}
+    volumes:
+      - data:/var/lib/postgresql
+      - ./docker/init-test-db.sh:/docker-entrypoint-initdb.d/init-test-db.sh:ro
+    healthcheck:
+      test: "pg_isready -U ${PGUSER} -d ${PGDATABASE}"
+      interval: 1s
+      timeout: 2s
+      retries: 10
+
+  migrate:
+    image: migrate/migrate
+    volumes:
+      - ./migrations:/migrations
+    command: >
+      -path /migrations
+      -database postgres://${PGUSER}:${PGPASSWORD}@${PGHOST}:${PGPORT}/${PGDATABASE}?sslmode=disable
+      up
+    depends_on:
+      db:
+        condition: service_healthy
+
+  server:
+    build:
+      context: .
+      dockerfile: server/Dockerfile
+      platforms:
+        - linux/amd64
+    image: lukwol/doable-server:latest
+    restart: unless-stopped
+    environment:
+      - ENV
+      - SECRET_KEY_BASE
+      - SERVER_HOST
+      - SERVER_PORT
+      - PGHOST
+      - PGPORT
+      - PGDATABASE
+      - PGUSER
+      - PGPASSWORD
+    expose:
+      - ${SERVER_PORT}
+    depends_on:
+      migrate:
+        condition: service_completed_successfully
+
+  caddy:
+    build:
+      context: .
+      dockerfile: client/Dockerfile
+    platform: linux/amd64
+    image: lukwol/doable-caddy:latest
+    restart: unless-stopped
+    environment:
+      - SERVER_PORT
+    ports:
+      - "80:80"
+    depends_on:
+      - server
+
+volumes:
+  data:
+    name: doable-prod-data
+
+networks:
+  default:
+    name: doable-prod-network
