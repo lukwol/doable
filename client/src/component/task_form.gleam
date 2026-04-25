@@ -15,21 +15,23 @@ pub fn view(
   description: String,
   completed: Option(Bool),
 ) -> Element(Msg) {
-  html.div([], [
-    html.div([], [
-      html.label([], [element.text("Name")]),
+  html.div([attribute.class("space-y-4")], [
+    html.div([attribute.class("form-control")], [
+      html.label([attribute.class("label")], [element.text("Name")]),
       html.input([
         attribute.type_("text"),
         attribute.placeholder("Task name"),
         attribute.value(name),
+        attribute.class("w-full input input-bordered"),
         event.on_input(UserUpdatedName),
       ]),
     ]),
-    html.div([], [
-      html.label([], [element.text("Description")]),
+    html.div([attribute.class("form-control")], [
+      html.label([attribute.class("label")], [element.text("Description")]),
       html.textarea(
         [
           attribute.placeholder("Optional description"),
+          attribute.class("w-full textarea textarea-bordered"),
           event.on_input(UserUpdatedDescription),
         ],
         description,
@@ -38,14 +40,18 @@ pub fn view(
     case completed {
       None -> element.none()
       Some(value) ->
-        html.label([], [
-          html.input([
-            attribute.type_("checkbox"),
-            attribute.checked(value),
-            event.on_check(UserUpdatedCompleted),
-          ]),
-          element.text("Completed"),
-        ])
+        html.label(
+          [attribute.class("gap-3 justify-start cursor-pointer label")],
+          [
+            html.input([
+              attribute.type_("checkbox"),
+              attribute.checked(value),
+              attribute.class("checkbox"),
+              event.on_check(UserUpdatedCompleted),
+            ]),
+            element.text("Completed"),
+          ],
+        )
     },
   ])
 }

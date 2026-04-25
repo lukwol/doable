@@ -56,17 +56,47 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 }
 
 pub fn view(model: Model) -> Element(Msg) {
-  html.div([], [
-    html.h1([], [element.text("Tasks")]),
-    html.a([attribute.href(route.to_path(route.NewTask))], [
-      element.text("New Task"),
+  html.div([attribute.class("min-h-screen bg-base-200")], [
+    html.div([attribute.class("container p-4 mx-auto max-w-2xl")], [
+      html.div([attribute.class("flex justify-between items-center mb-6")], [
+        html.h1([attribute.class("text-3xl font-bold")], [
+          element.text("Tasks"),
+        ]),
+        html.a(
+          [
+            attribute.href(route.to_path(route.NewTask)),
+            attribute.class("btn btn-primary"),
+          ],
+          [
+            html.span([attribute.class("icon-[heroicons--plus] size-5")], []),
+            element.text("New Task"),
+          ],
+        ),
+      ]),
+      case model.tasks {
+        Error(err) ->
+          html.div([attribute.class("alert alert-error")], [
+            element.text(error.message(err)),
+          ])
+        Ok([]) if model.loading ->
+          html.div([attribute.class("flex justify-center p-8")], [
+            html.span(
+              [attribute.class("loading loading-spinner loading-lg")],
+              [],
+            ),
+          ])
+        Ok([]) ->
+          html.div([attribute.class("shadow card bg-base-100")], [
+            html.div([attribute.class("items-center text-center card-body")], [
+              html.p([attribute.class("text-base-content/60")], [
+                element.text("No tasks yet"),
+              ]),
+            ]),
+          ])
+        Ok(tasks) ->
+          html.ul([attribute.class("space-y-2")], list.map(tasks, view_task))
+      },
     ]),
-    case model.tasks {
-      Error(err) -> html.p([], [element.text(error.message(err))])
-      Ok([]) if model.loading -> html.p([], [element.text("Loading...")])
-      Ok([]) -> html.p([], [element.text("No tasks yet")])
-      Ok(tasks) -> html.ul([], list.map(tasks, view_task))
-    },
   ])
 }
 
@@ -87,14 +117,56 @@ fn toggle_task(task: Task, completed: Bool) -> Effect(Msg) {
 }
 
 fn view_task(task: Task) -> Element(Msg) {
-  html.li([], [
-    html.input([
-      attribute.type_("checkbox"),
-      attribute.checked(task.completed),
-      event.on_check(fn(checked) { UserToggledTask(task, checked) }),
-    ]),
-    html.a([attribute.href(route.to_path(route.EditTask(task.id)))], [
-      element.text(task.name <> " — " <> task.description),
-    ]),
-  ])
+  html.li(
+    [
+      attribute.class(
+        "card bg-base-100 shadow hover:shadow-md transition-shadow",
+      ),
+    ],
+    [
+      html.div([attribute.class("flex-row gap-3 items-center p-4 card-body")], [
+        html.input([
+          attribute.type_("checkbox"),
+          attribute.checked(task.completed),
+          attribute.class("checkbox checkbox-primary"),
+          event.on_check(fn(checked) { UserToggledTask(task, checked) }),
+        ]),
+        html.a(
+          [
+            attribute.href(route.to_path(route.EditTask(task.id))),
+            attribute.class("flex flex-1 gap-3 items-center min-w-0"),
+          ],
+          [
+            html.div([attribute.class("flex-1 min-w-0")], [
+              html.p(
+                [
+                  attribute.class(case task.completed {
+                    True -> "font-medium line-through text-base-content/50"
+                    False -> "font-medium"
+                  }),
+                ],
+                [element.text(task.name)],
+              ),
+              case task.description {
+                "" -> element.none()
+                desc ->
+                  html.p(
+                    [attribute.class("text-sm text-base-content/60 truncate")],
+                    [element.text(desc)],
+                  )
+              },
+            ]),
+            html.span(
+              [
+                attribute.class(
+                  "icon-[heroicons--chevron-right] text-base-content/40 text-xl",
+                ),
+              ],
+              [],
+            ),
+          ],
+        ),
+      ]),
+    ],
+  )
 }

@@ -1,0 +1,9 @@
+{
+  "private": true,
+  "devDependencies": {
+    "@iconify-json/heroicons": "^1.2.3",
+    "@iconify/tailwind4": "^1.2.3",
+    "@tailwindcss/cli": "^4.2.4",
+    "daisyui": "^5.5.19"
+  }
+}

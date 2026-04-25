@@ -97,41 +97,103 @@ pub fn update(model: Model, msg: Msg) -> #(Model, Effect(Msg)) {
 
 pub fn view(model: Model) -> Element(Msg) {
   case model.loading {
-    True -> html.p([], [element.text("Loading...")])
+    True ->
+      html.div(
+        [
+          attribute.class(
+            "min-h-screen bg-base-200 flex items-center justify-center",
+          ),
+        ],
+        [
+          html.span([attribute.class("loading loading-spinner loading-lg")], []),
+        ],
+      )
     False ->
-      html.div([], [
-        html.h1([], [element.text("Edit Task")]),
-        case model.error {
-          None -> element.none()
-          Some(err) -> html.p([], [element.text(err)])
-        },
-        task_form.view(
-          model.task.name,
-          model.task.description,
-          Some(model.task.completed),
-        )
-          |> element.map(FormMsg),
-        html.div([], [
-          html.button(
-            [
-              attribute.disabled(model.submitting),
-              event.on_click(UserSubmittedForm),
-            ],
-            [
-              element.text(case model.submitting {
-                True -> "Saving..."
-                False -> "Save"
-              }),
-            ],
-          ),
-          html.button(
-            [
-              attribute.disabled(model.submitting),
-              event.on_click(UserClickedDelete),
-            ],
-            [element.text("Delete")],
-          ),
-          html.button([event.on_click(UserClickedBack)], [element.text("Back")]),
+      html.div([attribute.class("min-h-screen bg-base-200")], [
+        html.div([attribute.class("container p-4 mx-auto max-w-2xl")], [
+          html.div([attribute.class("flex gap-2 items-center mb-6")], [
+            html.button(
+              [
+                attribute.class("btn btn-ghost btn-sm btn-circle"),
+                event.on_click(UserClickedBack),
+              ],
+              [
+                html.span(
+                  [attribute.class("icon-[heroicons--arrow-left] size-5")],
+                  [],
+                ),
+              ],
+            ),
+            html.h1([attribute.class("text-2xl font-bold")], [
+              element.text("Edit Task"),
+            ]),
+          ]),
+          html.div([attribute.class("shadow card bg-base-100")], [
+            html.div([attribute.class("card-body")], [
+              case model.error {
+                None -> element.none()
+                Some(err) ->
+                  html.div([attribute.class("mb-4 alert alert-error")], [
+                    element.text(err),
+                  ])
+              },
+              task_form.view(
+                model.task.name,
+                model.task.description,
+                Some(model.task.completed),
+              )
+                |> element.map(FormMsg),
+              html.div([attribute.class("flex gap-2 mt-6")], [
+                html.button(
+                  [
+                    attribute.disabled(model.submitting),
+                    attribute.class("btn btn-primary"),
+                    event.on_click(UserSubmittedForm),
+                  ],
+                  [
+                    case model.submitting {
+                      True ->
+                        html.span(
+                          [
+                            attribute.class(
+                              "loading loading-spinner loading-sm",
+                            ),
+                          ],
+                          [],
+                        )
+                      False ->
+                        html.span(
+                          [
+                            attribute.class(
+                              "icon-[heroicons--document-check] size-5",
+                            ),
+                          ],
+                          [],
+                        )
+                    },
+                    element.text(case model.submitting {
+                      True -> "Saving..."
+                      False -> "Save"
+                    }),
+                  ],
+                ),
+                html.button(
+                  [
+                    attribute.disabled(model.submitting),
+                    attribute.class("btn btn-error"),
+                    event.on_click(UserClickedDelete),
+                  ],
+                  [
+                    html.span(
+                      [attribute.class("icon-[heroicons--trash] size-5")],
+                      [],
+                    ),
+                    element.text("Delete"),
+                  ],
+                ),
+              ]),
+            ]),
+          ]),
         ]),
       ])
   }
